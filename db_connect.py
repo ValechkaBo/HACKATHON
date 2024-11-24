@@ -36,7 +36,7 @@ class Database:
                 self.connection = None
         return self.connection
 
-    def execute_query(self, query, params=None):
+    def execute_query(self, query, params=None, connection=None):
         """
         Executes an SQL query.
 
@@ -44,10 +44,16 @@ class Database:
         :param params: Optional parameters for the query (tuple).
         :return: Query result for SELECT statements, or None for others.
         """
-        connection = self.connect_to_db()
+        manage_connection = False 
         if not connection:
-            print("Connection to the database failed.")
-            return None
+            connection = self.connect_to_db()
+            if not connection:
+                print("Connection to the database failed.")
+                return None
+            manage_connection = True  # Флаг для закрытия соединения
+        else:
+            manage_connection = False
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(query, params)
@@ -59,7 +65,12 @@ class Database:
             return result
         except psycopg2.Error as er:
             print(f"Error: {er}")
+            if manage_connection:
+                connection.rollback()
             return None
+        finally:
+            if manage_connection:
+                connection.close()
 
 # Example usage
 # test = Database()
