@@ -2,6 +2,7 @@
 from db_connect import Database
 from user_func import User
 
+
 def main_menu():
     database = Database()
     user_name = input("Enter your name: ")
